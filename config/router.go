@@ -3,6 +3,8 @@ package config
 import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
+	"github.com/swaggo/http-swagger"
+	_ "goawesome/docs" //required
 	"goawesome/model"
 	"net/http"
 	"time"
@@ -22,7 +24,19 @@ func AppRouter(versions model.Versions) *httprouter.Router {
 		}
 	}
 
+	//adding swagger handlers
+	router.GET("/swagger/*path", swaggerHandler())
+
 	return router
+}
+
+func swaggerHandler() httprouter.Handle {
+	handler := httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition"
+	)
+	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		handler.ServeHTTP(w, r)
+	}
 }
 
 // A Logger function which simply wraps the handler function around some log messages

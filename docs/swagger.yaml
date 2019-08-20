@@ -1,0 +1,133 @@
+basePath: /
+definitions:
+  model.ApiError:
+    properties:
+      details:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+      ts:
+        type: string
+    type: object
+  model.OpResult:
+    properties:
+      operation:
+        type: object
+      result:
+        type: object
+      success:
+        type: boolean
+    type: object
+host: awesome.go
+info:
+  contact:
+    email: support@awesome.go
+    name: API Support
+    url: http://www.awesome.go/support
+  description: This is a sample Go Awesome server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://awesome.go/terms/
+  title: Swagger Go Awesome API
+  version: "1.0"
+paths:
+  /v1/div:
+    get:
+      description: Should return status 200 with an division operation result
+      operationId: v1GetDiv
+      parameters:
+        - description: division operation numerator
+          in: query
+          name: x
+          required: true
+          type: integer
+        - description: division operation denominator
+          in: query
+          name: "y"
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.OpResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Division using request url params
+    put:
+      consumes:
+        - application/json
+      description: Should return status 200 with an division operation result
+      operationId: v1PutDiv
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.OpResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Division using request body
+  /v2/div:
+    get:
+      description: Should return status 200 with an division operation result
+      operationId: v2GetDiv
+      parameters:
+        - description: division operation numerator
+          in: query
+          name: x
+          required: true
+          type: integer
+        - description: division operation denominator
+          in: query
+          name: "y"
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.OpResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Division using request url params
+    put:
+      consumes:
+        - application/json
+      description: Should return status 200 with an division operation result
+      operationId: v2PutDiv
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.OpResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Division using request body
+swagger: "2.0"

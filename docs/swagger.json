@@ -1,0 +1,197 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a sample Go Awesome server.",
+    "title": "Swagger Go Awesome API",
+    "termsOfService": "http://awesome.go/terms/",
+    "contact": {
+      "name": "API Support",
+      "url": "http://www.awesome.go/support",
+      "email": "support@awesome.go"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0"
+  },
+  "host": "awesome.go",
+  "basePath": "/",
+  "paths": {
+    "/v1/div": {
+      "get": {
+        "description": "Should return status 200 with an division operation result",
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Division using request url params",
+        "operationId": "v1GetDiv",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "division operation numerator",
+            "name": "x",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "division operation denominator",
+            "name": "y",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.OpResult"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/model.ApiError"
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/model.ApiError"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Should return status 200 with an division operation result",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Division using request body",
+        "operationId": "v1PutDiv",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.OpResult"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/model.ApiError"
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "schema": {
+              "$ref": "#/definitions/model.ApiError"
+            }
+          }
+        }
+      }
+    },
+    "/v2/div": {
+      "get": {
+        "description": "Should return status 200 with an division operation result",
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Division using request url params",
+        "operationId": "v2GetDiv",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "division operation numerator",
+            "name": "x",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "division operation denominator",
+            "name": "y",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.OpResult"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/model.ApiError"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Should return status 200 with an division operation result",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Division using request body",
+        "operationId": "v2PutDiv",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/model.OpResult"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/model.ApiError"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "model.ApiError": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "ts": {
+          "type": "string"
+        }
+      }
+    },
+    "model.OpResult": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "type": "object"
+        },
+        "result": {
+          "type": "object"
+        },
+        "success": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
