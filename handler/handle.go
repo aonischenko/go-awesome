@@ -14,16 +14,24 @@ const MaxBodySize = 1048576
 
 type requestReader func(r *http.Request, model interface{}) error
 
-// writeError makes the error response with payload as json format
-func WriteError(w http.ResponseWriter, apiError model.ApiError) {
-	writeJson(w, apiError.Status, apiError)
-}
-
-// writeError makes the error response with payload as json format
+/*
+Writes handler response with payload as json format
+*/
 func WriteOk(w http.ResponseWriter, payload interface{}) {
 	writeJson(w, http.StatusOK, payload)
 }
 
+/*
+Writes an error response with payload as json format
+*/
+func WriteError(w http.ResponseWriter, apiError model.ApiError) {
+	writeJson(w, apiError.Status, apiError)
+}
+
+/*
+Reads model from request URL parameters
+e.g. /test?a=100&b=something
+*/
 func ReadUrlParams(r *http.Request, model interface{}) error {
 	query := r.URL.Query()
 	//todo replace with decoder hook
@@ -34,6 +42,9 @@ func ReadUrlParams(r *http.Request, model interface{}) error {
 	return mapstructure.WeakDecode(params, model)
 }
 
+/*
+Reads model from request body as json format
+*/
 func ReadBody(r *http.Request, model interface{}) error {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, MaxBodySize))
 	if err != nil {
@@ -48,7 +59,6 @@ func ReadBody(r *http.Request, model interface{}) error {
 	return nil
 }
 
-// writeJson makes the response with payload as json format
 func writeJson(w http.ResponseWriter, statusCode int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
