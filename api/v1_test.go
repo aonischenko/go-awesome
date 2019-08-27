@@ -25,7 +25,7 @@ func TestDivGet(t *testing.T) {
 		Method:   "GET",
 		Url:      "/v1/div?x=15&y=0",
 		Code:     http.StatusBadRequest,
-		Expected: `^{"status":400,"message":"Operation error","details":"division by zero","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":400,"message":"operation error","details":"division by zero","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 
 	t.Log("Unprocessable entry scenario for GET /v1/div")
@@ -35,7 +35,7 @@ func TestDivGet(t *testing.T) {
 		Method:   "GET",
 		Url:      "/v1/div?x=15&y=a",
 		Code:     http.StatusUnprocessableEntity,
-		Expected: `^{"status":422,"message":"Can't read input entity","details":"1 error.*","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":422,"message":"can't read input entity","details":"1 error.*","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 }
 
@@ -61,7 +61,7 @@ func TestDivPut(t *testing.T) {
 		Url:      "/v1/div",
 		Body:     `{"x":15,"y":0}`,
 		Code:     http.StatusBadRequest,
-		Expected: `^{"status":400,"message":"Operation error","details":"division by zero","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":400,"message":"operation error","details":"division by zero","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 
 	t.Log("Unprocessable entry scenario for GET /v1/div")
@@ -72,6 +72,6 @@ func TestDivPut(t *testing.T) {
 		Url:      "/v1/div",
 		Body:     `{"x":15,"y":"a"}`,
 		Code:     http.StatusUnprocessableEntity,
-		Expected: `^{"status":422,"message":"Can't read input entity","details":"json: cannot unmarshal string.*","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":422,"message":"can't read input entity","details":"json: cannot unmarshal string.*","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 }

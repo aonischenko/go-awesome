@@ -35,7 +35,7 @@ func TestDivGetV2(t *testing.T) {
 		Method:   "GET",
 		Url:      "/v2/div?x=15&y=a",
 		Code:     http.StatusBadRequest,
-		Expected: `^{"status":400,"message":"Can't read input entity","details":"1 error.*","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":400,"message":"can't read input entity","details":"1 error.*","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 }
 
@@ -72,6 +72,6 @@ func TestDivPutV2(t *testing.T) {
 		Url:      "/v2/div",
 		Body:     `{"x":15,"y":"a"}`,
 		Code:     http.StatusBadRequest,
-		Expected: `^{"status":400,"message":"Can't read input entity","details":"json: cannot unmarshal string.*","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":400,"message":"can't read input entity","details":"json: cannot unmarshal string.*","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 }
