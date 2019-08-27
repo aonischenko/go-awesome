@@ -3,27 +3,29 @@ package api
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"goawesome/handler"
 	"goawesome/model"
 	"goawesome/ops"
 	"net/http"
 )
 
-/*
-API V1 routes
-*/
 type V1 struct {
 	Version string
 }
 
-func NewV1() V1 {
-	return V1{Version: Version1}
+func NewV1() *V1 {
+	return &V1{Version: Version1}
 }
 
-func (v V1) RegisterHandlers(router *httprouter.Router) {
-	router.GET(fmt.Sprint("/", v.Version, "/div"), v.divByGet)
-	router.PUT(fmt.Sprint("/", v.Version, "/div"), v.divByPut)
+/*
+API V1 routes
+*/
+func (v *V1) Routes() Routes {
+	return Routes{
+		{Method: "GET", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByGet},
+		{Method: "PUT", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByPut},
+	}
 }
 
 // @Summary Division using request url params
@@ -58,7 +60,7 @@ func div(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
 
 	if err := f(r, op); err != nil {
 		apiError := model.NewApiError(http.StatusUnprocessableEntity, "can't read input entity", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
+		log.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
 		handler.WriteError(w, apiError)
 		return
 	}
@@ -66,7 +68,7 @@ func div(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
 	res, err := ops.DivWithRemainder(op.Left, op.Right)
 	if err != nil {
 		apiError := model.NewApiError(http.StatusBadRequest, "operation error", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
+		log.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
 		handler.WriteError(w, apiError)
 		return
 	}

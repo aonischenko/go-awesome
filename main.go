@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"github.com/caarlos0/env"
+	log "github.com/sirupsen/logrus"
 	"goawesome/config"
 	"net/http"
 )
-
-const addr = ":8080"
 
 //todo add configurable environments
 //todo check if swagger info can be moved into 'config' package
@@ -23,6 +23,12 @@ const addr = ":8080"
 // @host awesome.go
 // @BasePath /
 func main() {
-	handle := config.AppHandler()
-	logrus.Fatal(http.ListenAndServe(addr, handle))
+	cfg := config.Config{}
+	if env.Parse(&cfg) != nil {
+		log.Fatal("application configuration failed")
+	}
+	config.ConfigureLogger(cfg)
+	handle := config.AppHandler(cfg)
+	addr := fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
+	log.Fatal(http.ListenAndServe(addr, handle))
 }

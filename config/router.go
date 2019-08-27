@@ -1,67 +1,72 @@
 package config
 
 import (
-	"context"
 	"github.com/julienschmidt/httprouter"
-	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/swaggo/http-swagger"
 	"github.com/urfave/negroni"
 	"goawesome/api"
 	_ "goawesome/docs" //required
+	"goawesome/handler"
 	"net/http"
-	"time"
 )
 
-func AppHandler() http.Handler {
-	n := negroni.New()
-	n.Use(negroni.HandlerFunc(diagMiddleware))
-	n.Use(negroni.HandlerFunc(logMiddleware))
-	n.Use(negroni.NewRecovery())
-
+func AppHandler(cfg Config) http.Handler {
 	router := httprouter.New()
-	n.UseHandler(router)
-	for _, v := range api.Versions() {
-		v.RegisterHandlers(router)
-	}
+	router.GET("/swagger/*path", swaggerHandler)
 
-	//adding swagger handlers
-	//todo move swagger handlers into new group w|o additional middleware
-	router.GET("/swagger/*path", swaggerHandler())
+	n := negroni.New()
+	n.Use(negroni.NewRecovery())
+	n.UseHandler(router)
+
+	// add middleware for a specific route and get params from route
+	nApi := negroni.New(
+		negroni.HandlerFunc(handler.DiagMiddleware),
+		negroni.HandlerFunc(handler.LogMiddleware),
+	)
+	for _, v := range api.Apis() {
+		for _, route := range v.Routes() {
+			h := nApi.With(negroni.WrapFunc(withParams(router, route.Handle)))
+			router.Handler(route.Method, route.Path, h)
+		}
+	}
 
 	return n
+
+	//n := negroni.New()
+	//n.Use(negroni.HandlerFunc(handler.DiagMiddleware))
+	//n.Use(negroni.HandlerFunc(handler.LogMiddleware))
+	//n.Use(negroni.NewRecovery())
+	//
+	//router := httprouter.New()
+	//router.Handler(n.With(negroni.Wrap(router)))
+	//
+	//for _, v := range api.Apis() {
+	//	v.RegisterHandlers(router)
+	//}
+	//n.UseHandler(router)
+	//
+	//subRouter := httprouter.New()
+	//subRouter.Handle("GET", "/swagger/*", swaggerHandler())
+	//
+	////adding swagger handlers
+	////todo move swagger handlers into new group w|o additional middleware
+	////router.GET("/swagger/*path", swaggerHandler())
+	//
+	//n.UseHandler(subRouter)
+	//return n
 }
 
-func swaggerHandler() httprouter.Handle {
-	handler := httpSwagger.Handler(
+func swaggerHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	swaggerHandler := httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition"
 	)
-	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		handler.ServeHTTP(w, r)
-	}
+	swaggerHandler.ServeHTTP(w, r)
 }
 
-// Request diagnostic middleware
-func diagMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	contextKey, headerName := "requestId", "X-Request-Id"
-	requestId := r.Header.Get(headerName)
-	if requestId == "" {
-		requestId = uuid.NewV4().String()
+// helper function to call controller from middleware having access to URL params
+func withParams(router *httprouter.Router, handler httprouter.Handle) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, params, _ := router.Lookup(r.Method, r.URL.Path)
+		handler(w, r, params)
 	}
-	w.Header().Add(headerName, requestId)
-	ctx := r.WithContext(context.WithValue(r.Context(), contextKey, requestId))
-	next(w, ctx)
-}
-
-// Request logging middleware
-// Simply wraps the handler function with some log messages
-func logMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	logger := log.WithField("requestId", r.Context().Value("requestId"))
-	//contextKey := "logger"
-	//r.WithContext(context.WithValue(r.Context(), contextKey, logger))
-	start := time.Now()
-	//todo check if we have to compare to current log lvl first
-	logger.Tracef("%s %s : Request started", r.Method, r.URL.Path)
-	next(w, r)
-	logger.Tracef("%s %s : Request finished in %v", r.Method, r.URL.Path, time.Since(start))
 }

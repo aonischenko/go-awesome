@@ -7,8 +7,16 @@ import (
 /*
 Define all the API routes/versions here.
 */
+type Route struct {
+	Method string
+	Path   string
+	Handle httprouter.Handle
+}
+
+type Routes []Route
+
 type API interface {
-	RegisterHandlers(router *httprouter.Router)
+	Routes() Routes
 }
 
 const (
@@ -16,9 +24,10 @@ const (
 	Version2 = "v2"
 )
 
-func Versions() []API {
+func Apis() []API {
 	return []API{
 		NewV1(),
 		NewV2(),
+		&Common{},
 	}
 }
