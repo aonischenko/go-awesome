@@ -50,28 +50,28 @@ func DivWithRemainder(numerator, denominator int) (*DivResult, error) {
 func (r *DivResult) AsPeriodic() string {
 	var sb strings.Builder
 	if r.Negative {
-		sb.WriteRune('-')
+		sb.WriteByte('-')
 	}
 	sb.WriteString(fmt.Sprint(r.Quotient))
 	if r.Remainder > 0 {
-		sb.WriteRune('.')
+		sb.WriteByte('.')
 		dict := make(map[int]int)
-		res := make([]rune, 0) // seems it's a common practice to initialize zero length slice to prevent panics
+		res := make([]byte, 0) // seems it's a common practice to initialize zero length slice to prevent panics
 		pos := 0
 		for rem := r.Remainder; rem > 0; rem = rem * 10 % r.Denominator {
 			if val, exists := dict[rem]; !exists {
 				dict[rem] = pos
 				next := rem * 10 / r.Denominator
-				code := 48 + int(next)
-				res = append(res, rune(code))
+				code := 48 + byte(next)
+				res = append(res, code)
 				pos++
 			} else {
-				res = append(res[:val], append([]rune{'('}, append(res[val:], ')')...)...)
+				res = append(res[:val], append([]byte{'('}, append(res[val:], ')')...)...)
 				break
 			}
 		}
 		for k := 0; k < len(res); k++ {
-			sb.WriteRune(res[k])
+			sb.WriteByte(res[k])
 		}
 	}
 	return sb.String()
@@ -80,7 +80,7 @@ func (r *DivResult) AsPeriodic() string {
 func (r *DivResult) AsPlain() string {
 	var sb strings.Builder
 	if r.Negative {
-		sb.WriteRune('-')
+		sb.WriteByte('-')
 	}
 	hasQuotient := r.Quotient > 0 || r.Remainder == 0
 	if hasQuotient {
@@ -89,13 +89,13 @@ func (r *DivResult) AsPlain() string {
 	if r.Remainder > 0 {
 		gcd := GCD(r.Remainder, r.Denominator)
 		if hasQuotient {
-			sb.WriteRune('(')
+			sb.WriteByte('(')
 		}
 		sb.WriteString(fmt.Sprint(r.Remainder / gcd))
-		sb.WriteRune('/')
+		sb.WriteByte('/')
 		sb.WriteString(fmt.Sprint(r.Denominator / gcd))
 		if hasQuotient {
-			sb.WriteRune(')')
+			sb.WriteByte(')')
 		}
 	}
 	return sb.String()

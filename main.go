@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	"goawesome/api"
 	"goawesome/config"
 	"net/http"
 )
@@ -24,6 +23,6 @@ const addr = ":8080"
 // @host awesome.go
 // @BasePath /
 func main() {
-	router := config.AppRouter(api.AllRoutes())
-	logrus.Fatal(http.ListenAndServe(addr, router))
+	handle := config.AppHandler()
+	logrus.Fatal(http.ListenAndServe(addr, handle))
 }

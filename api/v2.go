@@ -1,19 +1,29 @@
 package api
 
 import (
+	"fmt"
+	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 	"goawesome/handler"
 	"goawesome/model"
+	"goawesome/ops"
+	"net/http"
 )
 
 /*
 API V2 routes
 */
-func v2() model.Routes {
-	routes := model.Routes{
-		v2GetDiv(),
-		v2PutDiv(),
-	}
-	return routes
+type V2 struct {
+	Version string
+}
+
+func NewV2() V2 {
+	return V2{Version: Version2}
+}
+
+func (v V2) RegisterHandlers(router *httprouter.Router) {
+	router.GET(fmt.Sprint("/", v.Version, "/div"), v.divByGet)
+	router.PUT(fmt.Sprint("/", v.Version, "/div"), v.divByPut)
 }
 
 // @Summary Division using request url params
@@ -25,13 +35,8 @@ func v2() model.Routes {
 // @Param x query int true "division operation numerator"
 // @Param y query int true "division operation denominator"
 // @Router /v2/div?x={x}&y={y} [get]
-func v2GetDiv() model.Route {
-	return model.Route{
-		Name:        "Division using request url params",
-		Method:      "GET",
-		Path:        "/div",
-		HandlerFunc: handler.DivGet,
-	}
+func (v *V2) divByGet(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	div2(w, r, handler.ReadUrlParams)
 }
 
 // @Summary Division using request body
@@ -42,11 +47,34 @@ func v2GetDiv() model.Route {
 // @Success 200 {object} model.OpResult
 // @Failure 400 {object} model.ApiError
 // @Router /v2/div [put]
-func v2PutDiv() model.Route {
-	return model.Route{
-		Name:        "Division using request body",
-		Method:      "PUT",
-		Path:        "/div",
-		HandlerFunc: handler.DivPut,
+func (v *V2) divByPut(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	div2(w, r, handler.ReadBody)
+}
+
+func div2(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
+	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
+
+	if err := f(r, op); err != nil {
+		apiError := model.NewApiError(http.StatusBadRequest, "can't read input entity", err.Error())
+		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
+		handler.WriteError(w, apiError)
+		return
 	}
+
+	res, err := ops.DivWithRemainder(op.Left, op.Right)
+	if err != nil {
+		logrus.Debugf("Api Error: %s. Details: %s", "operation error", err.Error())
+		handler.WriteOk(w, model.OpResult{
+			Operation: op,
+			Success:   false,
+			Result:    err.Error(),
+		})
+		return
+	}
+
+	handler.WriteOk(w, model.OpResult{
+		Operation: op,
+		Success:   true,
+		Result:    res.AsPeriodic(),
+	})
 }

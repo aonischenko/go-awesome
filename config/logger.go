@@ -15,7 +15,7 @@ func init() {
 
 	// Setting DEBUG level as default
 	// Should be configurable depending on env
-	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.TraceLevel)
 
 	logrus.Trace("Logger initialized successfully")
 }

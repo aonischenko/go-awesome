@@ -1,4 +1,4 @@
-basePath: /
+basePath: '{{.BasePath}}'
 definitions:
   model.ApiError:
     properties:
@@ -20,19 +20,13 @@ definitions:
       success:
         type: boolean
     type: object
-host: awesome.go
+host: '{{.Host}}'
 info:
-  contact:
-    email: support@awesome.go
-    name: API Support
-    url: http://www.awesome.go/support
-  description: This is a sample Go Awesome server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://awesome.go/terms/
-  title: Swagger Go Awesome API
-  version: "1.0"
+  contact: {}
+  description: '{{.Description}}'
+  license: {}
+  title: '{{.Title}}'
+  version: '{{.Version}}'
 paths:
   /v1/div:
     get:
@@ -56,14 +50,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.OpResult'
+            type: object
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ApiError'
+            type: object
         "422":
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/model.ApiError'
+            type: object
       summary: Division using request url params
     put:
       consumes:
@@ -77,14 +74,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.OpResult'
+            type: object
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ApiError'
+            type: object
         "422":
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/model.ApiError'
+            type: object
       summary: Division using request body
   /v2/div:
     get:
@@ -108,10 +108,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.OpResult'
+            type: object
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ApiError'
+            type: object
       summary: Division using request url params
     put:
       consumes:
@@ -125,9 +127,11 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.OpResult'
+            type: object
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/model.ApiError'
+            type: object
       summary: Division using request body
 swagger: "2.0"

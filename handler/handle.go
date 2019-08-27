@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/mitchellh/mapstructure"
-	"github.com/sirupsen/logrus"
 	"goawesome/model"
 	"io"
 	"io/ioutil"
@@ -12,7 +12,7 @@ import (
 
 const MaxBodySize = 1048576
 
-type requestReader func(r *http.Request, model interface{}) error
+type RequestReader func(r *http.Request, model interface{}) error
 
 /*
 Writes handler response with payload as json format
@@ -44,6 +44,7 @@ func ReadUrlParams(r *http.Request, model interface{}) error {
 
 /*
 Reads model from request body as json format
+e.g. /test -> {"x":10,"y":5}
 */
 func ReadBody(r *http.Request, model interface{}) error {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, MaxBodySize))
@@ -72,8 +73,7 @@ func writeJson(w http.ResponseWriter, statusCode int, payload interface{}) {
 }
 
 func writeResponseBody(w http.ResponseWriter, payload []byte) {
-	//todo checkTestCase how can it happen & if it's a good practice to call Fatal() in this case
 	if _, err := w.Write(payload); err != nil {
-		logrus.Fatalf("Error writing response body: %s", err.Error())
+		panic(fmt.Sprintf("Error writing response body: %s", err.Error()))
 	}
 }

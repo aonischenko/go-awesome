@@ -1,22 +1,14 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "This is a sample Go Awesome server.",
-    "title": "Swagger Go Awesome API",
-    "termsOfService": "http://awesome.go/terms/",
-    "contact": {
-      "name": "API Support",
-      "url": "http://www.awesome.go/support",
-      "email": "support@awesome.go"
+    "description": "{{.Description}}",
+    "title": "{{.Title}}",
+    "contact": {},
+    "license": {},
+    "version": "{{.Version}}"
     },
-    "license": {
-      "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-    },
-    "version": "1.0"
-  },
-  "host": "awesome.go",
-  "basePath": "/",
+  "host": "{{.Host}}",
+  "basePath": "{{.BasePath}}",
   "paths": {
     "/v1/div": {
       "get": {
@@ -46,18 +38,21 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.OpResult"
             }
           },
           "400": {
             "description": "Bad Request",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.ApiError"
             }
           },
           "422": {
             "description": "Unprocessable Entity",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.ApiError"
             }
           }
@@ -77,18 +72,21 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.OpResult"
             }
           },
           "400": {
             "description": "Bad Request",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.ApiError"
             }
           },
           "422": {
             "description": "Unprocessable Entity",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.ApiError"
             }
           }
@@ -123,12 +121,14 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.OpResult"
             }
           },
           "400": {
             "description": "Bad Request",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.ApiError"
             }
           }
@@ -148,12 +148,14 @@
           "200": {
             "description": "OK",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.OpResult"
             }
           },
           "400": {
             "description": "Bad Request",
             "schema": {
+              "type": "object",
               "$ref": "#/definitions/model.ApiError"
             }
           }

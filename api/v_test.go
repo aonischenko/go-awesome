@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"github.com/julienschmidt/httprouter"
@@ -38,4 +38,12 @@ func checkTestCase(tc testRequestCase) {
 	if !matched {
 		tc.Test.Errorf("Response body doesn't match `%v`; expected pattern: `%v`", res, tc.Expected)
 	}
+}
+
+func prepareRouter(api API) *httprouter.Router {
+	//todo checkTestCase how can we use "api" package w/o getting into circle dependencies
+	//seems we just have to get routes & handlers within same package
+	r := httprouter.New()
+	api.RegisterHandlers(r)
+	return r
 }
