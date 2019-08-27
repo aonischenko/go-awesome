@@ -27,18 +27,17 @@ func AppHandler() http.Handler {
 
 	//adding swagger handlers
 	//todo move swagger handlers into new group w|o additional middleware
-	router.GET("/swagger/*path", swaggerHandler())
+	router.GET("/swagger/*path", swaggerHandle)
 
 	return n
 }
 
-func swaggerHandler() httprouter.Handle {
-	handler := httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition"
+func swaggerHandle(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	swaggerHandler := httpSwagger.Handler(
+		//URL pointing to API definition"
+		httpSwagger.URL("/swagger/doc.json"),
 	)
-	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		handler.ServeHTTP(w, r)
-	}
+	swaggerHandler.ServeHTTP(w, r)
 }
 
 // Request diagnostic middleware
