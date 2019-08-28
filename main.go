@@ -29,7 +29,7 @@ func main() {
 		log.Fatal("application configuration failed")
 	}
 	config.ConfigureLogger(cfg)
-	handler := api.AppHandler(cfg)
+	handler := controller.AppHandler(cfg)
 	addr := fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
 	log.Fatal(http.ListenAndServe(addr, handler))
 }

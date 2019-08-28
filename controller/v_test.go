@@ -44,5 +44,5 @@ func prepareTestHandler() http.Handler {
 	cfg := config.Config{
 		SwagEnable: false,
 	}
-	return SetupRouter(cfg)
+	return AppHandler(cfg)
 }
