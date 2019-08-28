@@ -17,13 +17,15 @@ type V1 struct {
 	Version string
 }
 
-func NewV1() V1 {
-	return V1{Version: Version1}
+func NewV1() *V1 {
+	return &V1{Version: Version1}
 }
 
-func (v V1) RegisterHandlers(router *httprouter.Router) {
-	router.GET(fmt.Sprint("/", v.Version, "/div"), v.divByGet)
-	router.PUT(fmt.Sprint("/", v.Version, "/div"), v.divByPut)
+func (v *V1) ListRoutes() Routes {
+	return Routes{
+		{Method: "GET", Path: fmt.Sprint("/", v.Version, "/div"), Handler: v.divByGet},
+		{Method: "PUT", Path: fmt.Sprint("/", v.Version, "/div"), Handler: v.divByPut},
+	}
 }
 
 // @Summary Division using request url params
@@ -53,7 +55,7 @@ func (v *V1) divByPut(w http.ResponseWriter, r *http.Request, p httprouter.Param
 	div(w, r, handler.ReadBody)
 }
 
-func div(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
+func div(w http.ResponseWriter, r *http.Request, f handler.ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
 
 	if err := f(r, op); err != nil {

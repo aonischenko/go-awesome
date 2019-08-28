@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/julienschmidt/httprouter"
+	"goawesome/config"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -11,7 +11,7 @@ import (
 
 type testRequestCase struct {
 	Test     *testing.T
-	Router   *httprouter.Router
+	Router   http.Handler
 	Method   string
 	Url      string
 	Body     string
@@ -40,10 +40,6 @@ func checkTestCase(tc testRequestCase) {
 	}
 }
 
-func prepareRouter(api API) *httprouter.Router {
-	//todo checkTestCase how can we use "api" package w/o getting into circle dependencies
-	//seems we just have to get routes & handlers within same package
-	r := httprouter.New()
-	api.RegisterHandlers(r)
-	return r
+func prepareRouter(api API) http.Handler {
+	return AppHandler(config.Config{})
 }
