@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/gin-gonic/gin v1.4.0
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/satori/go.uuid v1.2.0

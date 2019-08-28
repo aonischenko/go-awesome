@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func AppHandler() http.Handler {
+func AppHandler(cfg Config) http.Handler {
 	r := gin.New()
 
 	g1 := r.Group("/v1")
@@ -39,8 +39,6 @@ func diagMiddleware(ctx *gin.Context) {
 	}
 	ctx.Writer.Header().Add(headerName, requestId)
 	ctx.Set(contextKey, requestId)
-	gin.Logger()
-	//ctx.Next()
 }
 
 // Request logging middleware
