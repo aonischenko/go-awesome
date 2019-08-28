@@ -1,16 +1,16 @@
-package config
+package api
 
 import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/swaggo/http-swagger"
 	"github.com/urfave/negroni"
-	"goawesome/api"
+	"goawesome/config"
 	_ "goawesome/docs" //required
 	"goawesome/handler"
 	"net/http"
 )
 
-func AppHandler(cfg Config) http.Handler {
+func AppHandler(cfg config.Config) http.Handler {
 	router := httprouter.New()
 	router.GET("/swagger/*path", swaggerHandler)
 
@@ -23,37 +23,14 @@ func AppHandler(cfg Config) http.Handler {
 		negroni.HandlerFunc(handler.DiagMiddleware),
 		negroni.HandlerFunc(handler.LogMiddleware),
 	)
-	for _, v := range api.Apis() {
-		for _, route := range v.Routes() {
+	for _, v := range ListAPIs() {
+		for _, route := range v.ListRoutes() {
 			h := nApi.With(negroni.WrapFunc(withParams(router, route.Handle)))
 			router.Handler(route.Method, route.Path, h)
 		}
 	}
 
 	return n
-
-	//n := negroni.New()
-	//n.Use(negroni.HandlerFunc(handler.DiagMiddleware))
-	//n.Use(negroni.HandlerFunc(handler.LogMiddleware))
-	//n.Use(negroni.NewRecovery())
-	//
-	//router := httprouter.New()
-	//router.Handler(n.With(negroni.Wrap(router)))
-	//
-	//for _, v := range api.Apis() {
-	//	v.RegisterHandlers(router)
-	//}
-	//n.UseHandler(router)
-	//
-	//subRouter := httprouter.New()
-	//subRouter.Handle("GET", "/swagger/*", swaggerHandler())
-	//
-	////adding swagger handlers
-	////todo move swagger handlers into new group w|o additional middleware
-	////router.GET("/swagger/*path", swaggerHandler())
-	//
-	//n.UseHandler(subRouter)
-	//return n
 }
 
 func swaggerHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

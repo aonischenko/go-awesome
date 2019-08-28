@@ -16,16 +16,18 @@ type Route struct {
 type Routes []Route
 
 type API interface {
-	Routes() Routes
+	ListRoutes() Routes
 }
+
+type APIs []API
 
 const (
 	Version1 = "v1"
 	Version2 = "v2"
 )
 
-func Apis() []API {
-	return []API{
+func ListAPIs() APIs {
+	return APIs{
 		NewV1(),
 		NewV2(),
 		&Common{},

@@ -21,7 +21,7 @@ func NewV1() *V1 {
 /*
 API V1 routes
 */
-func (v *V1) Routes() Routes {
+func (v *V1) ListRoutes() Routes {
 	return Routes{
 		{Method: "GET", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByGet},
 		{Method: "PUT", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByPut},

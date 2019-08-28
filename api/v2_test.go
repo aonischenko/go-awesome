@@ -6,7 +6,7 @@ import (
 )
 
 func TestDivGetV2(t *testing.T) {
-	router := prepareRouter(NewV2())
+	router := prepareRouter()
 
 	t.Log("Normal flow scenario for GET /v2/div")
 	checkTestCase(testRequestCase{
@@ -40,7 +40,7 @@ func TestDivGetV2(t *testing.T) {
 }
 
 func TestDivPutV2(t *testing.T) {
-	router := prepareRouter(NewV2())
+	router := prepareRouter()
 
 	t.Log("Normal flow scenario for PUT /v2/div")
 	checkTestCase(testRequestCase{

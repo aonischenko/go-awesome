@@ -10,7 +10,7 @@ type Common struct{}
 /*
 API V1 routes
 */
-func (c *Common) Routes() Routes {
+func (c *Common) ListRoutes() Routes {
 	return Routes{
 		{Method: "GET", Path: "/panic", Handle: c.startPanic},
 	}
