@@ -21,13 +21,11 @@ func NewV2() *V2 {
 	return &V2{Version: Version2}
 }
 
-/*
-API V1 routes
-*/
+
 func (v *V2) ListRoutes() Routes {
 	return Routes{
-		{Method: "GET", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByGet},
-		{Method: "PUT", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByPut},
+		{Method: "GET", Path: fmt.Sprintf("/%s/div", v.Version), Handler: v.divByGet},
+		{Method: "PUT", Path: fmt.Sprintf("/%s/div", v.Version), Handler: v.divByPut},
 	}
 }
 
@@ -56,7 +54,7 @@ func (v *V2) divByPut(w http.ResponseWriter, r *http.Request, p httprouter.Param
 	div2(w, r, handler.ReadBody)
 }
 
-func div2(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
+func div2(w http.ResponseWriter, r *http.Request, f handler.ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
 
 	if err := f(r, op); err != nil {

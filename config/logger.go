@@ -16,7 +16,7 @@ func ConfigureLogger(cfg Config) {
 	logrus.SetOutput(os.Stdout)
 
 	// Setting INFO level as default
-	switch cfg.LogLevel {
+	switch strings.ToUpper(cfg.LogLevel) {
 	case "DEBUG":
 		logrus.SetLevel(logrus.DebugLevel)
 	case "TRACE":

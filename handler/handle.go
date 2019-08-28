@@ -12,7 +12,7 @@ import (
 
 const MaxBodySize = 1048576
 
-type RequestReader func(r *http.Request, model interface{}) error
+type ModelReader func(r *http.Request, model interface{}) error
 
 /*
 Writes handler response with payload as json format

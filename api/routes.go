@@ -4,6 +4,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+type Route struct {
+	Method  string
+	Path    string
+	Handler httprouter.Handle
+}
+
+type Routes []Route
+
 /*
 Define all the API routes/versions here.
 */

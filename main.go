@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+const addr = ":8080"
+
 //todo add configurable environments
 //todo check if swagger info can be moved into 'config' package
 
@@ -29,7 +31,7 @@ func main() {
 		log.Fatal("application configuration failed")
 	}
 	config.ConfigureLogger(cfg)
-	handle := api.AppHandler(cfg)
+	handler := api.AppHandler(cfg)
 	addr := fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
-	log.Fatal(http.ListenAndServe(addr, handle))
+	log.Fatal(http.ListenAndServe(addr, handler))
 }

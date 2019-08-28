@@ -10,6 +10,9 @@ import (
 	"net/http"
 )
 
+/*
+API V1 routes
+*/
 type V1 struct {
 	Version string
 }
@@ -18,13 +21,10 @@ func NewV1() *V1 {
 	return &V1{Version: Version1}
 }
 
-/*
-API V1 routes
-*/
 func (v *V1) ListRoutes() Routes {
 	return Routes{
-		{Method: "GET", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByGet},
-		{Method: "PUT", Path: fmt.Sprintf("/%s/div", v.Version), Handle: v.divByPut},
+		{Method: "GET", Path: fmt.Sprintf("/%s/div", v.Version), Handler: v.divByGet},
+		{Method: "PUT", Path: fmt.Sprintf("/%s/div", v.Version), Handler: v.divByPut},
 	}
 }
 
@@ -55,7 +55,7 @@ func (v *V1) divByPut(w http.ResponseWriter, r *http.Request, p httprouter.Param
 	div(w, r, handler.ReadBody)
 }
 
-func div(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
+func div(w http.ResponseWriter, r *http.Request, f handler.ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
 
 	if err := f(r, op); err != nil {
