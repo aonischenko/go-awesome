@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/julienschmidt/httprouter"
+	"goawesome/config"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -11,7 +11,7 @@ import (
 
 type testRequestCase struct {
 	Test     *testing.T
-	Router   *httprouter.Router
+	Handler  http.Handler
 	Method   string
 	Url      string
 	Body     string
@@ -25,10 +25,10 @@ func checkTestCase(tc testRequestCase) {
 	if err != nil {
 		tc.Test.Fatal(err)
 	}
-	tc.Router.ServeHTTP(recorder, req)
+	tc.Handler.ServeHTTP(recorder, req)
 
 	if status := recorder.Code; status != tc.Code {
-		tc.Test.Errorf("Wrong status: %v; expected: %v", status, tc.Code)
+		tc.Test.Errorf("Wrong response status: %v; expected: %v", status, tc.Code)
 	}
 	res := recorder.Body.String()
 	matched, err := regexp.MatchString(tc.Expected, res)
@@ -40,10 +40,9 @@ func checkTestCase(tc testRequestCase) {
 	}
 }
 
-func prepareRouter(api API) *httprouter.Router {
-	//todo checkTestCase how can we use "controller" package w/o getting into circle dependencies
-	//seems we just have to get routes & handlers within same package
-	r := httprouter.New()
-	api.RegisterHandlers(r)
-	return r
+func prepareTestHandler() http.Handler {
+	cfg := config.Config{
+		SwagEnable: false,
+	}
+	return SetupRouter(cfg)
 }

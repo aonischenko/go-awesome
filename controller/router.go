@@ -1,4 +1,4 @@
-package config
+package controller
 
 import (
 	"github.com/gin-gonic/gin"
@@ -6,26 +6,31 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-	"goawesome/controller"
+	"goawesome/config"
 	_ "goawesome/docs" //required
-	"net/http"
 	"time"
 )
 
-func AppHandler(cfg Config) http.Handler {
+type API interface {
+	RegisterHandlers(r *gin.RouterGroup)
+}
+
+func SetupRouter(cfg config.Config) *gin.Engine {
 	r := gin.New()
 
 	g1 := r.Group("/v1")
 	g1.Use(diagMiddleware, logMiddleware)
-	v1 := controller.V1{}
+	v1 := V1{}
 	v1.RegisterHandlers(g1)
 
 	g2 := r.Group("/v2")
-	g2.Use(diagMiddleware, logMiddleware)
-	v2 := controller.V2{}
+	g2.Use(gin.Recovery(), diagMiddleware, logMiddleware)
+	v2 := V2{}
 	v2.RegisterHandlers(g2)
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	if cfg.SwagEnable {
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	return r
 }

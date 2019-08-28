@@ -32,6 +32,11 @@ func GCD(a, b int) int {
 	return a
 }
 
+func Panic(s string) string {
+	panic(s)
+	return s
+}
+
 func DivWithRemainder(numerator, denominator int) (*DivResult, error) {
 	if denominator == 0 {
 		return nil, fmt.Errorf(divisionByZero)

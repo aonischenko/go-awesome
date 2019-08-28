@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"goawesome/handler"
 	"goawesome/model"
 	"goawesome/ops"
 	"net/http"
@@ -31,7 +30,7 @@ func (v V1) RegisterHandlers(r *gin.RouterGroup) {
 // @Param y query int true "division operation denominator"
 // @Router /v1/div?x={x}&y={y} [get]
 func (v *V1) divByGet(ctx *gin.Context) {
-	div(ctx, handler.ReadUrlParams)
+	div(ctx, ReadUrlParams)
 }
 
 // @Summary Division using request body
@@ -44,28 +43,28 @@ func (v *V1) divByGet(ctx *gin.Context) {
 // @Failure 422 {object} model.ApiError
 // @Router /v1/div [put]
 func (v *V1) divByPut(ctx *gin.Context) {
-	div(ctx, handler.ReadBody)
+	div(ctx, ReadBody)
 }
 
-func div(ctx *gin.Context, f handler.RequestReader) {
+func div(ctx *gin.Context, opReader ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
 
-	if err := f(ctx.Request, op); err != nil {
+	if err := opReader(ctx, op); err != nil {
 		apiError := model.NewApiError(http.StatusUnprocessableEntity, "can't read input entity", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
-		handler.WriteError(ctx.Writer, apiError)
+		logrus.Debugf("API Error: %s. Details: %s", apiError.Message, apiError.Details)
+		ctx.JSON(apiError.Status, apiError)
 		return
 	}
 
 	res, err := ops.DivWithRemainder(op.Left, op.Right)
 	if err != nil {
 		apiError := model.NewApiError(http.StatusBadRequest, "operation error", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
-		handler.WriteError(ctx.Writer, apiError)
+		logrus.Debugf("API Error: %s. Details: %s", apiError.Message, apiError.Details)
+		ctx.JSON(apiError.Status, apiError)
 		return
 	}
 
-	handler.WriteOk(ctx.Writer, model.OpResult{
+	ctx.JSON(http.StatusOK, model.OpResult{
 		Operation: op,
 		Success:   true,
 		Result:    res.AsPlain(),

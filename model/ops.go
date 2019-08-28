@@ -6,13 +6,13 @@ type Operation struct {
 
 type UnaryOp struct {
 	Operation
-	Operand int `json:"x" mapstructure:"x"`
+	Operand int `json:"x" form:"x" binding:"exists"`
 }
 
 type BinaryOp struct {
 	Operation
-	Left  int `json:"x" mapstructure:"x"`
-	Right int `json:"y" mapstructure:"y"`
+	Left  int `json:"x" form:"x" binding:"exists"`
+	Right int `json:"y" form:"y" binding:"exists"`
 }
 
 type OpResult struct {

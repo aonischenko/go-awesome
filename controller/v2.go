@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"goawesome/handler"
 	"goawesome/model"
 	"goawesome/ops"
 	"net/http"
@@ -18,6 +17,7 @@ type V2 struct {
 func (v V2) RegisterHandlers(r *gin.RouterGroup) {
 	r.GET("/div", v.divByGet)
 	r.PUT("/div", v.divByPut)
+	r.GET("/panic/:reason", v.startPanic)
 }
 
 // @Summary Division using request url params
@@ -30,7 +30,7 @@ func (v V2) RegisterHandlers(r *gin.RouterGroup) {
 // @Param y query int true "division operation denominator"
 // @Router /v2/div?x={x}&y={y} [get]
 func (v *V2) divByGet(ctx *gin.Context) {
-	div2(ctx, handler.ReadUrlParams)
+	div2(ctx, ReadUrlParams)
 }
 
 // @Summary Division using request body
@@ -42,23 +42,37 @@ func (v *V2) divByGet(ctx *gin.Context) {
 // @Failure 400 {object} model.ApiError
 // @Router /v2/div [put]
 func (v *V2) divByPut(ctx *gin.Context) {
-	div2(ctx, handler.ReadBody)
+	div2(ctx, ReadBody)
 }
 
-func div2(ctx *gin.Context, f handler.RequestReader) {
+// @Summary Panic endpoint
+// @Description Should return status 500 with an division operation result
+// @ID v2StartPanic
+// @Produce json
+// @Success 200 {object} model.OpResult
+// @Failure 500 {object}
+// @Router /v2/div [put]
+func (v *V2) startPanic(ctx *gin.Context) {
+	reason := ops.Panic(ctx.Params.ByName("reason"))
+	ctx.JSON(http.StatusOK, struct{ Reason string }{
+		Reason: reason,
+	})
+}
+
+func div2(ctx *gin.Context, opReader ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
 
-	if err := f(ctx.Request, op); err != nil {
+	if err := opReader(ctx, op); err != nil {
 		apiError := model.NewApiError(http.StatusBadRequest, "can't read input entity", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
-		handler.WriteError(ctx.Writer, apiError)
+		logrus.Debugf("API Error: %s. Details: %s", apiError.Message, apiError.Details)
+		ctx.JSON(apiError.Status, apiError)
 		return
 	}
 
 	res, err := ops.DivWithRemainder(op.Left, op.Right)
 	if err != nil {
-		logrus.Debugf("Api Error: %s. Details: %s", "operation error", err.Error())
-		handler.WriteOk(ctx.Writer, model.OpResult{
+		logrus.Debugf("API Error: %s. Details: %s", "operation error", err.Error())
+		ctx.JSON(http.StatusOK, model.OpResult{
 			Operation: op,
 			Success:   false,
 			Result:    err.Error(),
@@ -66,7 +80,7 @@ func div2(ctx *gin.Context, f handler.RequestReader) {
 		return
 	}
 
-	handler.WriteOk(ctx.Writer, model.OpResult{
+	ctx.JSON(http.StatusOK, model.OpResult{
 		Operation: op,
 		Success:   true,
 		Result:    res.AsPeriodic(),

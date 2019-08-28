@@ -6,12 +6,12 @@ import (
 )
 
 func TestDivGet(t *testing.T) {
-	router := prepareRouter(NewV1())
+	handler := prepareTestHandler()
 
 	t.Log("Normal flow scenario for GET /v1/div")
 	checkTestCase(testRequestCase{
 		Test:     t,
-		Router:   router,
+		Handler:  handler,
 		Method:   "GET",
 		Url:      "/v1/div?x=15&y=10",
 		Code:     http.StatusOK,
@@ -21,7 +21,7 @@ func TestDivGet(t *testing.T) {
 	t.Log("Division by zero scenario for GET /v1/div")
 	checkTestCase(testRequestCase{
 		Test:     t,
-		Router:   router,
+		Handler:  handler,
 		Method:   "GET",
 		Url:      "/v1/div?x=15&y=0",
 		Code:     http.StatusBadRequest,
@@ -31,21 +31,21 @@ func TestDivGet(t *testing.T) {
 	t.Log("Unprocessable entry scenario for GET /v1/div")
 	checkTestCase(testRequestCase{
 		Test:     t,
-		Router:   router,
+		Handler:  handler,
 		Method:   "GET",
 		Url:      "/v1/div?x=15&y=a",
 		Code:     http.StatusUnprocessableEntity,
-		Expected: `^{"status":422,"message":"can't read input entity","details":"1 error.*","ts":"[0-9T:\-\.]+Z"}$`,
+		Expected: `^{"status":422,"message":"can't read input entity","details":".*","ts":"[0-9T:\-\.]+Z"}$`,
 	})
 }
 
 func TestDivPut(t *testing.T) {
-	router := prepareRouter(NewV1())
+	handler := prepareTestHandler()
 
 	t.Log("Normal flow scenario for PUT /v1/div")
 	checkTestCase(testRequestCase{
 		Test:     t,
-		Router:   router,
+		Handler:  handler,
 		Method:   "PUT",
 		Url:      "/v1/div",
 		Body:     `{"x":15,"y":10}`,
@@ -56,7 +56,7 @@ func TestDivPut(t *testing.T) {
 	t.Log("Division by zero scenario for GET /v1/div")
 	checkTestCase(testRequestCase{
 		Test:     t,
-		Router:   router,
+		Handler:  handler,
 		Method:   "PUT",
 		Url:      "/v1/div",
 		Body:     `{"x":15,"y":0}`,
@@ -67,7 +67,7 @@ func TestDivPut(t *testing.T) {
 	t.Log("Unprocessable entry scenario for GET /v1/div")
 	checkTestCase(testRequestCase{
 		Test:     t,
-		Router:   router,
+		Handler:  handler,
 		Method:   "PUT",
 		Url:      "/v1/div",
 		Body:     `{"x":15,"y":"a"}`,
