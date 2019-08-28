@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-chi/chi v4.0.2+incompatible // indirect
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/mitchellh/mapstructure v1.1.2

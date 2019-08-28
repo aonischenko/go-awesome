@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func AppHandler() http.Handler {
+func AppHandler(cfg Config) http.Handler {
 	n := negroni.New()
 	n.Use(negroni.HandlerFunc(diagMiddleware))
 	n.Use(negroni.HandlerFunc(logMiddleware))
