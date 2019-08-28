@@ -12,17 +12,6 @@ type Route struct {
 
 type Routes []Route
 
-/*
-Define all the API routes/versions here.
-*/
-type Route struct {
-	Method string
-	Path   string
-	Handle httprouter.Handle
-}
-
-type Routes []Route
-
 type API interface {
 	ListRoutes() Routes
 }
@@ -34,6 +23,9 @@ const (
 	Version2 = "v2"
 )
 
+/*
+Define all the API routes/versions here.
+*/
 func ListAPIs() APIs {
 	return APIs{
 		NewV1(),

@@ -25,7 +25,7 @@ func AppHandler(cfg config.Config) http.Handler {
 	)
 	for _, v := range ListAPIs() {
 		for _, route := range v.ListRoutes() {
-			h := nApi.With(negroni.WrapFunc(withParams(router, route.Handle)))
+			h := nApi.With(negroni.WrapFunc(withParams(router, route.Handler)))
 			router.Handler(route.Method, route.Path, h)
 		}
 	}

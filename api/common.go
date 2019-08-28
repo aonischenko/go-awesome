@@ -12,7 +12,7 @@ API V1 routes
 */
 func (c *Common) ListRoutes() Routes {
 	return Routes{
-		{Method: "GET", Path: "/panic", Handle: c.startPanic},
+		{Method: "GET", Path: "/panic", Handler: c.startPanic},
 	}
 }
 
