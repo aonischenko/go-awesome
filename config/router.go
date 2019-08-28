@@ -1,66 +1,57 @@
 package config
 
 import (
-	"context"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	"github.com/swaggo/http-swagger"
-	"github.com/urfave/negroni"
-	"goawesome/api"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
+	"goawesome/controller"
 	_ "goawesome/docs" //required
 	"net/http"
 	"time"
 )
 
 func AppHandler() http.Handler {
-	n := negroni.New()
-	n.Use(negroni.HandlerFunc(diagMiddleware))
-	n.Use(negroni.HandlerFunc(logMiddleware))
-	n.Use(negroni.NewRecovery())
+	r := gin.New()
 
-	router := httprouter.New()
-	n.UseHandler(router)
-	for _, v := range api.Versions() {
-		v.RegisterHandlers(router)
-	}
+	g1 := r.Group("/v1")
+	g1.Use(diagMiddleware, logMiddleware)
+	v1 := controller.V1{}
+	v1.RegisterHandlers(g1)
 
-	//adding swagger handlers
-	//todo move swagger handlers into new group w|o additional middleware
-	router.GET("/swagger/*path", swaggerHandle)
+	g2 := r.Group("/v2")
+	g2.Use(diagMiddleware, logMiddleware)
+	v2 := controller.V2{}
+	v2.RegisterHandlers(g2)
 
-	return n
-}
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-func swaggerHandle(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	swaggerHandler := httpSwagger.Handler(
-		//URL pointing to API definition"
-		httpSwagger.URL("/swagger/doc.json"),
-	)
-	swaggerHandler.ServeHTTP(w, r)
+	return r
 }
 
 // Request diagnostic middleware
-func diagMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func diagMiddleware(ctx *gin.Context) {
 	contextKey, headerName := "requestId", "X-Request-Id"
-	requestId := r.Header.Get(headerName)
+	requestId := ctx.Request.Header.Get(headerName)
 	if requestId == "" {
 		requestId = uuid.NewV4().String()
 	}
-	w.Header().Add(headerName, requestId)
-	ctx := r.WithContext(context.WithValue(r.Context(), contextKey, requestId))
-	next(w, ctx)
+	ctx.Writer.Header().Add(headerName, requestId)
+	ctx.Set(contextKey, requestId)
+	gin.Logger()
+	//ctx.Next()
 }
 
 // Request logging middleware
 // Simply wraps the handler function with some log messages
-func logMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	logger := log.WithField("requestId", r.Context().Value("requestId"))
+func logMiddleware(ctx *gin.Context) {
+	logger := log.WithField("requestId", ctx.Value("requestId"))
 	//contextKey := "logger"
 	//r.WithContext(context.WithValue(r.Context(), contextKey, logger))
 	start := time.Now()
 	//todo check if we have to compare to current log lvl first
-	logger.Tracef("%s %s : Request started", r.Method, r.URL.Path)
-	next(w, r)
-	logger.Tracef("%s %s : Request finished in %v", r.Method, r.URL.Path, time.Since(start))
+	logger.Tracef("%s %s : Request started", ctx.Request.Method, ctx.Request.URL.Path)
+	ctx.Next()
+	logger.Tracef("%s %s : Request finished in %v", ctx.Request.Method, ctx.Request.URL.Path, time.Since(start))
 }

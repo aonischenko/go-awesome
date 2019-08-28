@@ -1,8 +1,7 @@
-package api
+package controller
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"goawesome/handler"
 	"goawesome/model"
@@ -14,16 +13,11 @@ import (
 API V2 routes
 */
 type V2 struct {
-	Version string
 }
 
-func NewV2() V2 {
-	return V2{Version: Version2}
-}
-
-func (v V2) RegisterHandlers(router *httprouter.Router) {
-	router.GET(fmt.Sprint("/", v.Version, "/div"), v.divByGet)
-	router.PUT(fmt.Sprint("/", v.Version, "/div"), v.divByPut)
+func (v V2) RegisterHandlers(r *gin.RouterGroup) {
+	r.GET("/div", v.divByGet)
+	r.PUT("/div", v.divByPut)
 }
 
 // @Summary Division using request url params
@@ -35,8 +29,8 @@ func (v V2) RegisterHandlers(router *httprouter.Router) {
 // @Param x query int true "division operation numerator"
 // @Param y query int true "division operation denominator"
 // @Router /v2/div?x={x}&y={y} [get]
-func (v *V2) divByGet(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	div2(w, r, handler.ReadUrlParams)
+func (v *V2) divByGet(ctx *gin.Context) {
+	div2(ctx, handler.ReadUrlParams)
 }
 
 // @Summary Division using request body
@@ -47,24 +41,24 @@ func (v *V2) divByGet(w http.ResponseWriter, r *http.Request, p httprouter.Param
 // @Success 200 {object} model.OpResult
 // @Failure 400 {object} model.ApiError
 // @Router /v2/div [put]
-func (v *V2) divByPut(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	div2(w, r, handler.ReadBody)
+func (v *V2) divByPut(ctx *gin.Context) {
+	div2(ctx, handler.ReadBody)
 }
 
-func div2(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
+func div2(ctx *gin.Context, f handler.RequestReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
 
-	if err := f(r, op); err != nil {
+	if err := f(ctx.Request, op); err != nil {
 		apiError := model.NewApiError(http.StatusBadRequest, "can't read input entity", err.Error())
 		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
-		handler.WriteError(w, apiError)
+		handler.WriteError(ctx.Writer, apiError)
 		return
 	}
 
 	res, err := ops.DivWithRemainder(op.Left, op.Right)
 	if err != nil {
 		logrus.Debugf("Api Error: %s. Details: %s", "operation error", err.Error())
-		handler.WriteOk(w, model.OpResult{
+		handler.WriteOk(ctx.Writer, model.OpResult{
 			Operation: op,
 			Success:   false,
 			Result:    err.Error(),
@@ -72,7 +66,7 @@ func div2(w http.ResponseWriter, r *http.Request, f handler.RequestReader) {
 		return
 	}
 
-	handler.WriteOk(w, model.OpResult{
+	handler.WriteOk(ctx.Writer, model.OpResult{
 		Operation: op,
 		Success:   true,
 		Result:    res.AsPeriodic(),

@@ -1,4 +1,4 @@
-package api
+package controller
 
 import (
 	"github.com/julienschmidt/httprouter"
@@ -41,7 +41,7 @@ func checkTestCase(tc testRequestCase) {
 }
 
 func prepareRouter(api API) *httprouter.Router {
-	//todo checkTestCase how can we use "api" package w/o getting into circle dependencies
+	//todo checkTestCase how can we use "controller" package w/o getting into circle dependencies
 	//seems we just have to get routes & handlers within same package
 	r := httprouter.New()
 	api.RegisterHandlers(r)
