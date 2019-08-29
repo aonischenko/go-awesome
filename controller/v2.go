@@ -61,17 +61,20 @@ func (v *V2) startPanic(ctx *gin.Context) {
 
 func div2(ctx *gin.Context, opReader ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
+	log := RequestLogger(r.Context())
+	// test request logger
+	log.Trace("v2 div func called")
 
 	if err := opReader(ctx, op); err != nil {
 		apiError := model.NewApiError(http.StatusBadRequest, "can't read input entity", err.Error())
-		logrus.Debugf("API Error: %s. Details: %s", apiError.Message, apiError.Details)
+		log.Debugf("API Error: %s. Details: %s", apiError.Message, apiError.Details)
 		ctx.JSON(apiError.Status, apiError)
 		return
 	}
 
 	res, err := ops.DivWithRemainder(op.Left, op.Right)
 	if err != nil {
-		logrus.Debugf("API Error: %s. Details: %s", "operation error", err.Error())
+		log.Debugf("API Error: %s. Details: %s", "operation error", err.Error())
 		ctx.JSON(http.StatusOK, model.OpResult{
 			Operation: op,
 			Success:   false,

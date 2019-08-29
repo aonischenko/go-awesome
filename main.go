@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/caarlos0/env"
-	log "github.com/sirupsen/logrus"
-	"goawesome/config"
-	"goawesome/controller"
+	"github.com/sirupsen/logrus"
+	"goawesome/api"
+	. "goawesome/config"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 //todo add configurable environments
@@ -24,12 +29,38 @@ import (
 // @host awesome.go
 // @BasePath /
 func main() {
-	cfg := config.Config{}
+	cfg := Config{}
 	if env.Parse(&cfg) != nil {
-		log.Fatal("application configuration failed")
+		logrus.Fatal("application configuration failed")
+		os.Exit(1)
 	}
-	config.ConfigureLogger(cfg)
-	handler := controller.AppHandler(cfg)
-	addr := fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
-	log.Fatal(http.ListenAndServe(addr, handler))
+	ConfigureLogger(cfg)
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf("%s:%v", cfg.Host, cfg.Port),
+		Handler:      api.AppHandler(cfg),
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+	defer gracefulShutdown(srv)
+
+	go func() {
+		Log.Fatal(srv.ListenAndServe())
+	}()
+}
+
+func gracefulShutdown(srv *http.Server) {
+	interruptChan := make(chan os.Signal, 1)
+	signal.Notify(interruptChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	// Block until we receive our signal.
+	<-interruptChan
+
+	// Create a deadline to wait for.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_ = srv.Shutdown(ctx)
+
+	Log.Info("Shutting down")
+	os.Exit(0)
 }
