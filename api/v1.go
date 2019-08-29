@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus"
 	"goawesome/handler"
 	"goawesome/model"
 	"goawesome/ops"
@@ -57,10 +56,11 @@ func (v *V1) divByPut(w http.ResponseWriter, r *http.Request, p httprouter.Param
 
 func div(w http.ResponseWriter, r *http.Request, f handler.ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
+	log := RequestLogger(r.Context())
 
 	if err := f(r, op); err != nil {
 		apiError := model.NewApiError(http.StatusUnprocessableEntity, "can't read input entity", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
+		log.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
 		handler.WriteError(w, apiError)
 		return
 	}
@@ -68,7 +68,7 @@ func div(w http.ResponseWriter, r *http.Request, f handler.ModelReader) {
 	res, err := ops.DivWithRemainder(op.Left, op.Right)
 	if err != nil {
 		apiError := model.NewApiError(http.StatusBadRequest, "operation error", err.Error())
-		logrus.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
+		log.Debugf("Api Error: %s. Details: %s", apiError.Message, apiError.Details)
 		handler.WriteError(w, apiError)
 		return
 	}

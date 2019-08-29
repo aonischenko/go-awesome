@@ -4,15 +4,21 @@ import (
 	"context"
 	"github.com/julienschmidt/httprouter"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/swaggo/http-swagger"
-	"goawesome/config"
+	. "goawesome/config"
 	_ "goawesome/docs" //required
 	"net/http"
 	"time"
 )
 
-func AppHandler(cfg config.Config) http.Handler {
+const (
+	ContextLoggerKey    = "logger"
+	ContextRequestIdKey = "requestId"
+	HeaderRequestIdKey  = "X-Request-Id"
+)
+
+func AppHandler(cfg Config) http.Handler {
 	router := httprouter.New()
 
 	for _, v := range Versions() {
@@ -27,12 +33,14 @@ func AppHandler(cfg config.Config) http.Handler {
 	}
 
 	//adding swagger handlers
-	router.GET("/swagger/*path", swaggerHandle)
+	if cfg.SwagEnable {
+		router.GET("/swagger/*path", swaggerHandler)
+	}
 
 	return router
 }
 
-func swaggerHandle(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func swaggerHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	swaggerHandler := httpSwagger.Handler(
 		//URL pointing to API definition
 		httpSwagger.URL("/swagger/doc.json"),
@@ -43,14 +51,13 @@ func swaggerHandle(w http.ResponseWriter, r *http.Request, params httprouter.Par
 // Request diagnostic middleware
 func diagMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		contextKey, headerName := "requestId", "X-Request-Id"
-		requestId := r.Header.Get(headerName)
+		requestId := r.Header.Get(HeaderRequestIdKey)
 		if requestId == "" {
 			requestId = uuid.NewV4().String()
 		}
-		w.Header().Add(headerName, requestId)
-		ctx := r.WithContext(context.WithValue(r.Context(), contextKey, requestId))
-		next(w, ctx, p)
+		w.Header().Add(HeaderRequestIdKey, requestId)
+		request := r.WithContext(context.WithValue(r.Context(), ContextRequestIdKey, requestId))
+		next(w, request, p)
 	}
 }
 
@@ -58,13 +65,21 @@ func diagMiddleware(next httprouter.Handle) httprouter.Handle {
 // Simply wraps the handler function with some log messages
 func logMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		logger := log.WithField("requestId", r.Context().Value("requestId"))
-		//contextKey := "logger"
-		//r.WithContext(context.WithValue(r.Context(), contextKey, logger))
+		logger := Log.WithField("requestId", r.Context().Value(ContextRequestIdKey))
+		request := r.WithContext(context.WithValue(r.Context(), ContextLoggerKey, logger))
 		start := time.Now()
 		//todo check if we have to compare to current log lvl first
 		logger.Tracef("%s %s : Request started", r.Method, r.URL.Path)
-		next(w, r, p)
+		next(w, request, p)
 		logger.Tracef("%s %s : Request finished in %v", r.Method, r.URL.Path, time.Since(start))
 	}
+}
+
+func RequestLogger(c context.Context) logrus.Entry {
+	if contextLogger := c.Value(ContextLoggerKey); contextLogger != nil {
+		if logger, ok := contextLogger.(*logrus.Entry); ok {
+			return *logger
+		}
+	}
+	return Log
 }

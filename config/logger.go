@@ -6,28 +6,38 @@ import (
 	"strings"
 )
 
+// setting default logger
+var Log = *logrus.NewEntry(logrus.New())
+
 func ConfigureLogger(cfg Config) {
+	var formatter logrus.Formatter
+	formatter = &logrus.TextFormatter{}
 	if strings.EqualFold("json", cfg.LogFormat) {
 		// Log as JSON instead of the default ASCII formatter.
-		logrus.SetFormatter(&logrus.JSONFormatter{})
+		formatter = &logrus.JSONFormatter{}
 	}
 
-	// Output to stdout instead of the default stderr
-	logrus.SetOutput(os.Stdout)
-
+	var level logrus.Level
 	// Setting INFO level as default
 	switch strings.ToUpper(cfg.LogLevel) {
 	case "DEBUG":
-		logrus.SetLevel(logrus.DebugLevel)
+		level = logrus.DebugLevel
+		break
 	case "TRACE":
-		logrus.SetLevel(logrus.TraceLevel)
+		level = logrus.TraceLevel
+		break
 	default:
-		logrus.SetLevel(logrus.InfoLevel)
+		level = logrus.InfoLevel
 	}
 
-	if cfg.LogCaller {
-		logrus.SetReportCaller(true)
+	Log = logrus.Entry{
+		Logger: &logrus.Logger{
+			Out:          os.Stdout,
+			Formatter:    formatter,
+			Level:        level,
+			ReportCaller: cfg.LogCaller,
+		},
 	}
 
-	logrus.Trace("Logger initialized successfully")
+	Log.Trace("Logger initialized successfully")
 }
