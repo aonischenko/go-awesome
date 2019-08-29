@@ -1,22 +1,29 @@
 package controller
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-	"goawesome/config"
+	. "goawesome/config"
 	_ "goawesome/docs" //required
 	"net/http"
 	"time"
+)
+
+const (
+	ContextLoggerKey    = "logger"
+	ContextRequestIdKey = "requestId"
+	HeaderRequestIdKey  = "X-Request-Id"
 )
 
 type API interface {
 	RegisterHandlers(r *gin.RouterGroup)
 }
 
-func AppHandler(cfg config.Config) http.Handler {
+func AppHandler(cfg Config) http.Handler {
 	r := gin.New()
 
 	g1 := r.Group("/v1")
@@ -38,24 +45,31 @@ func AppHandler(cfg config.Config) http.Handler {
 
 // Request diagnostic middleware
 func diagMiddleware(ctx *gin.Context) {
-	contextKey, headerName := "requestId", "X-Request-Id"
-	requestId := ctx.Request.Header.Get(headerName)
+	requestId := ctx.Request.Header.Get(HeaderRequestIdKey)
 	if requestId == "" {
 		requestId = uuid.NewV4().String()
 	}
-	ctx.Writer.Header().Add(headerName, requestId)
-	ctx.Set(contextKey, requestId)
+	ctx.Writer.Header().Add(HeaderRequestIdKey, requestId)
+	ctx.Set(ContextRequestIdKey, requestId)
 }
 
 // Request logging middleware
 // Simply wraps the handler function with some log messages
 func logMiddleware(ctx *gin.Context) {
-	logger := log.WithField("requestId", ctx.Value("requestId"))
-	//contextKey := "logger"
-	//r.WithContext(context.WithValue(r.Context(), contextKey, logger))
+	logger := Log.WithField("requestId", ctx.Value("requestId"))
+	ctx.Set(ContextLoggerKey, logger)
 	start := time.Now()
 	//todo check if we have to compare to current log lvl first
 	logger.Tracef("%s %s : Request started", ctx.Request.Method, ctx.Request.URL.Path)
 	ctx.Next()
 	logger.Tracef("%s %s : Request finished in %v", ctx.Request.Method, ctx.Request.URL.Path, time.Since(start))
+}
+
+func RequestLogger(c context.Context) logrus.Entry {
+	if contextLogger := c.Value(ContextLoggerKey); contextLogger != nil {
+		if logger, ok := contextLogger.(*logrus.Entry); ok {
+			return *logger
+		}
+	}
+	return Log
 }

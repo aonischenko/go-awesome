@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
-	"goawesome/handler"
+	"github.com/gin-gonic/gin"
 	"goawesome/model"
 	"goawesome/ops"
 	"net/http"
@@ -49,7 +47,7 @@ func (v *V1) divByPut(ctx *gin.Context) {
 
 func div(ctx *gin.Context, opReader ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
-	log := RequestLogger(r.Context())
+	log := RequestLogger(ctx)
 
 	if err := opReader(ctx, op); err != nil {
 		apiError := model.NewApiError(http.StatusUnprocessableEntity, "can't read input entity", err.Error())

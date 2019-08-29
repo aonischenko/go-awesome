@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/caarlos0/env"
 	"github.com/sirupsen/logrus"
-	"goawesome/api"
 	. "goawesome/config"
+	"goawesome/controller"
 	"net/http"
 	"os"
 	"os/signal"
@@ -38,7 +38,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf("%s:%v", cfg.Host, cfg.Port),
-		Handler:      api.AppHandler(cfg),
+		Handler:      controller.AppHandler(cfg),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

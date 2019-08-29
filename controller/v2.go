@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"goawesome/model"
 	"goawesome/ops"
 	"net/http"
@@ -61,7 +60,7 @@ func (v *V2) startPanic(ctx *gin.Context) {
 
 func div2(ctx *gin.Context, opReader ModelReader) {
 	op := &model.BinaryOp{Operation: model.Operation{Name: "division"}}
-	log := RequestLogger(r.Context())
+	log := RequestLogger(ctx)
 	// test request logger
 	log.Trace("v2 div func called")
 
